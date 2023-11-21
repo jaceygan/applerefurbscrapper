@@ -1,10 +1,13 @@
 from bs4 import BeautifulSoup
 import requests
+import emailproperties
+from email.message import EmailMessage
+import ssl
+import smtplib
 
-searchList= 'air 15 starlight m2'.split()
+searchstring = 'm2 air 15 starlight'
 
-sendEmail = True
-
+searchList= searchstring.split()
 mainurl = "https://www.apple.com/sg/shop/refurbished/mac"
 urlprefix = "https://www.apple.com"
 response = requests.get(mainurl).text
@@ -20,6 +23,8 @@ def searchMatch(sl, p):
     return True
 
 count = 0
+separator = "============================="
+emailbody = separator+'\n'
 for product in products:
     if product.find('a'): #conveiently, the other garbage doesnt have a href
         pName = product.text.replace('Refurbished', '').strip()
@@ -28,21 +33,32 @@ for product in products:
             pURL = urlprefix+product.find('a')['href']  
             pDetails = requests.get(pURL).content
             pSoup = BeautifulSoup(pDetails, 'lxml')
-            print(str(count)+ '. '+ pName)
-            print()
+            emailbody +=(str(count)+ '. '+ pName)
+            emailbody += '\n'
 
-            print("Price:",pSoup.find("div", class_="rf-pdp-currentprice").text)
-            print('Info:')
+            emailbody +="Price:"+ str(pSoup.find("div", class_="rf-pdp-currentprice").text)+'\n'
+            emailbody += 'Info:'
             
             for info in pSoup.find("div", class_="rc-pdsection-mainpanel column large-9 small-12"):
-                print(info.text.strip())
+                emailbody += '\t'+info.text.strip()+'\n'
 
-            print(pURL)
-            print()
+            emailbody += pURL
+            emailbody += '\n'
             
-            print ("=================================================")
-            print()
+            emailbody += separator+'\n'
+            emailbody += '\n'
 
 
-print(count, "items found")
-            
+emailbody = str(count) + ' items found for '+ searchstring + '\n' + emailbody
+
+em = EmailMessage()
+em['From'] = emailproperties.sender
+em['To'] = emailproperties.reciepient
+em['Subject'] = emailproperties.subject
+em.set_content(emailbody)
+
+context = ssl.create_default_context()
+
+with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+    smtp.login(emailproperties.sender, emailproperties.password)
+    smtp.sendmail(emailproperties.sender, emailproperties.reciepient, em.as_string())
