@@ -1,4 +1,5 @@
 *.log
 emailp.txt
+emailproperties.py
 test/
 __pycache__/
