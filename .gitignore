@@ -1,3 +1,4 @@
 *.log
-test/
 emailp.txt
+test/
+__pycache__/
