@@ -3,4 +3,4 @@ Scrap apple refurb store
 
 Yes, I am aware of Refurb-Tracker.
 
-I am getting my feet wet with webscrapping using Python and Beautiful Soup
+I am getting my feet wet with webscrapping.
